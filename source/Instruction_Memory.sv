@@ -48,7 +48,7 @@
 //    end
 
 //endmodule
-module Instruction_Memory (
+/*module Instruction_Memory (
     input  logic        clk,
     input  logic        reset,
     input  logic        HSEL1,
@@ -74,6 +74,36 @@ module Instruction_Memory (
         end else begin
             instruction <= 32'h00000000;
         end
+    end
+
+endmodule*/
+module Instruction_Memory(
+    input clk,
+    input reset,
+    input HSEL1,
+    input rd_en_rom,
+    input [31:0] address_rom,
+    output reg [31:0] instruction
+);
+
+    reg [31:0] rom[4:0];
+    wire [2:0] rom_index;
+    assign rom_index = address_rom[2:0];  // 4-byte aligned word address
+
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            rom[0] <= 32'h002081b3;  // 0x0000_0000
+            rom[1] <= 32'h40218233;  // 0x0000_0004
+            rom[2] <= 32'h0020c2b3;  // 0x0000_0008
+            rom[3] <= 32'h0020e333;  // optional
+            rom[4] <= 32'h0020f3b3;  // optional
+            instruction  <= 32'b0;
+        end
+        else if (rd_en_rom&&HSEL1) begin
+            instruction <= rom[rom_index];
+        end
+        else 
+        instruction  <= 32'b0;
     end
 
 endmodule
